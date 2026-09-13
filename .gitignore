@@ -1,0 +1,20 @@
+# Dependencies
+node_modules/
+
+# Environment variables
+.env
+*.env.local
+
+# Google OAuth tokens / credentials
+token.json
+credentials.json
+
+# IDE / OS metadata
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Log files
+*.log
+npm-debug.log*

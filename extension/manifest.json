@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "Sidekick - AI Assistant",
+  "version": "1.0.0",
+  "description": "An AI agent that lives where you work, understands page context, and takes action.",
+  "permissions": [
+    "sidePanel",
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "action": {
+    "default_title": "Open Sidekick"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ]
+}

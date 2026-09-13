@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sidekick</title>
+  <link rel="stylesheet" href="sidepanel.css">
+</head>
+<body>
+  <div class="app-container">
+    <header class="app-header">
+      <div class="logo-area">
+        <span class="logo-icon">⚡</span>
+        <h1 class="app-title">Sidekick</h1>
+      </div>
+      <span class="status-badge" id="statusBadge">Active</span>
+    </header>
+
+    <main class="chat-container" id="chatContainer">
+      <div class="message assistant-message">
+        <div class="message-content">
+          👋 Hi! I'm <strong>Sidekick</strong>. Ask me to perform actions based on the webpage you're currently viewing.
+        </div>
+      </div>
+    </main>
+
+    <div class="loading-indicator hidden" id="loadingIndicator">
+      <div class="spinner"></div>
+      <span>Sidekick is thinking...</span>
+    </div>
+
+    <footer class="input-container">
+      <form id="chatForm">
+        <input 
+          type="text" 
+          id="userInput" 
+          placeholder="e.g. Add this meeting to my calendar..." 
+          autocomplete="off"
+          required
+        />
+        <button type="submit" id="sendBtn" title="Send Request">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      </form>
+    </footer>
+  </div>
+
+  <script src="sidepanel.js"></script>
+</body>
+</html>

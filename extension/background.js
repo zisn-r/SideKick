@@ -1,0 +1,10 @@
+// Sidekick Background Service Worker
+
+// Open side panel when extension action icon is clicked
+chrome.sidePanel
+  .setPanelBehavior({ openPanelOnActionClick: true })
+  .catch((error) => console.error("Error setting side panel behavior:", error));
+
+chrome.runtime.onInstalled.addListener(() => {
+  console.log("Sidekick Extension Installed.");
+});
