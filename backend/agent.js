@@ -1,9 +1,15 @@
 const OpenAI = require('openai');
 
-// Initialize OpenAI client using environment variable
-const openai = new OpenAI({
+// Initialize OpenAI client using environment variables (supporting custom baseURL like LiteLLM)
+const openaiConfig = {
   apiKey: process.env.OPENAI_API_KEY || 'dummy-key-for-dev'
-});
+};
+
+if (process.env.OPENAI_BASE_URL) {
+  openaiConfig.baseURL = process.env.OPENAI_BASE_URL;
+}
+
+const openai = new OpenAI(openaiConfig);
 
 // Tool definition schema for create_calendar_event
 const createCalendarEventTool = {
@@ -37,8 +43,8 @@ const createCalendarEventTool = {
 };
 
 /**
- * Heuristic parser used as a fallback when OpenAI API key is missing or invalid.
- * Dynamically extracts title, date, time, and location directly from the active webpage text context.
+ * Heuristic parser used as a fallback when API key is missing or invalid.
+ * Dynamically extracts title, date, time, and location directly from active webpage text context.
  */
 function extractEventHeuristic(pageContext, userRequest) {
   const text = pageContext || '';
@@ -49,7 +55,6 @@ function extractEventHeuristic(pageContext, userRequest) {
   if (subjectMatch && subjectMatch[1].trim()) {
     title = subjectMatch[1].trim();
   } else {
-    // Find first non-empty meaningful line
     const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 5 && !l.startsWith(':root') && !l.startsWith('/*'));
     if (lines.length > 0) {
       title = lines[0].substring(0, 50);
@@ -83,12 +88,7 @@ function extractEventHeuristic(pageContext, userRequest) {
     location = locationMatch[1].trim();
   }
 
-  return {
-    title,
-    date,
-    time,
-    location
-  };
+  return { title, date, time, location };
 }
 
 /**
@@ -99,6 +99,7 @@ function extractEventHeuristic(pageContext, userRequest) {
  */
 async function runAgent(userRequest, pageContext) {
   const currentDate = new Date().toISOString().split('T')[0];
+  const modelName = process.env.OPENAI_MODEL || 'gpt-4o';
 
   const systemPrompt = `You are Sidekick, an AI agent living in the user's browser.
 Your role is to analyze the active webpage context and execute the user's request using the available tools.
@@ -118,9 +119,11 @@ Instructions:
   ];
 
   try {
-    // Call OpenAI Chat Completions API with tools
+    console.log(`🤖 Calling OpenAI/LiteLLM model (${modelName}) at ${openaiConfig.baseURL || 'default OpenAI API'}...`);
+
+    // Call OpenAI / LiteLLM API with tools
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o',
+      model: modelName,
       messages,
       tools: [createCalendarEventTool],
       tool_choice: 'auto'
@@ -129,11 +132,13 @@ Instructions:
     const choice = response.choices[0];
     const message = choice.message;
 
-    // Check if the model decided to call a tool
+    // Check if model called a tool
     if (message.tool_calls && message.tool_calls.length > 0) {
       const toolCall = message.tool_calls[0];
       const functionName = toolCall.function.name;
       const functionArgs = JSON.parse(toolCall.function.arguments);
+
+      console.log('✅ Model Tool Call Executed:', functionName, functionArgs);
 
       return {
         hasToolCall: true,
@@ -149,9 +154,9 @@ Instructions:
       message: message.content || "I couldn't find any event information on this page."
     };
   } catch (error) {
-    console.error('OpenAI API call failed or missing key:', error.message);
+    console.error('API call failed:', error.message);
     
-    // Dynamic Fallback: Parse the actual page context sent from the browser!
+    // Dynamic Fallback: Parse active webpage context using heuristic extraction
     console.log('ℹ️ Parsing active webpage context dynamically using heuristic extraction fallback...');
     const extractedDetails = extractEventHeuristic(pageContext, userRequest);
 
