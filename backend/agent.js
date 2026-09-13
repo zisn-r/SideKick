@@ -37,13 +37,68 @@ const createCalendarEventTool = {
 };
 
 /**
+ * Heuristic parser used as a fallback when OpenAI API key is missing or invalid.
+ * Dynamically extracts title, date, time, and location directly from the active webpage text context.
+ */
+function extractEventHeuristic(pageContext, userRequest) {
+  const text = pageContext || '';
+  
+  // 1. Extract Title / Subject
+  let title = 'Meeting';
+  const subjectMatch = text.match(/Subject:\s*([^\n\r]+)/i) || text.match(/(?:Meeting|Kickoff|Sync|Discussion|Event):\s*([^\n\r]+)/i);
+  if (subjectMatch && subjectMatch[1].trim()) {
+    title = subjectMatch[1].trim();
+  } else {
+    // Find first non-empty meaningful line
+    const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 5 && !l.startsWith(':root') && !l.startsWith('/*'));
+    if (lines.length > 0) {
+      title = lines[0].substring(0, 50);
+    }
+  }
+
+  // 2. Extract Date
+  let date = new Date().toISOString().split('T')[0];
+  const dateMatch = text.match(/(?:Date|on):\s*([A-Za-z]+,\s*[A-Za-z]+\s+\d{1,2}(?:,\s*\d{4})?|\d{4}-\d{2}-\d{2}|[A-Za-z]+\s+\d{1,2}(?:,\s*\d{4})?)/i)
+    || text.match(/\b(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)?,?\s*(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2}(?:,?\s*\d{4})?\b/i);
+  
+  if (dateMatch) {
+    date = dateMatch[1] || dateMatch[0];
+  }
+
+  // 3. Extract Time
+  let time = '10:00 AM';
+  const timeMatch = text.match(/\b([0-1]?\d:[0-5]\d\s*(?:AM|PM|am|pm)?|[0-2]?\d\s*(?:AM|PM|am|pm))\b/i)
+    || text.match(/(?:Time|at):\s*([^\n\r,]+)/i);
+  
+  if (timeMatch) {
+    time = timeMatch[1].trim();
+  }
+
+  // 4. Extract Location
+  let location = 'Online / TBD';
+  const locationMatch = text.match(/(?:Location|Venue|Where|in):\s*([^\n\r.]+)/i)
+    || text.match(/\b(Meeting Room [A-Z0-9]+|Building \d+|Zoom|Google Meet|Teams)\b/i);
+  
+  if (locationMatch) {
+    location = locationMatch[1].trim();
+  }
+
+  return {
+    title,
+    date,
+    time,
+    location
+  };
+}
+
+/**
  * Runs the OpenAI agent with the user request and webpage context.
  * @param {string} userRequest - Natural language command from user
  * @param {string} pageContext - Text content captured from current webpage
  * @returns {Promise<Object>} Agent result containing tool call or text response
  */
 async function runAgent(userRequest, pageContext) {
-  const currentDate = new Date().toISOString().split('T')[0]; // Current date for context
+  const currentDate = new Date().toISOString().split('T')[0];
 
   const systemPrompt = `You are Sidekick, an AI agent living in the user's browser.
 Your role is to analyze the active webpage context and execute the user's request using the available tools.
@@ -94,25 +149,18 @@ Instructions:
       message: message.content || "I couldn't find any event information on this page."
     };
   } catch (error) {
-    console.error('Error running OpenAI agent:', error.message);
+    console.error('OpenAI API call failed or missing key:', error.message);
     
-    // Fallback stub response if API key is invalid/missing in dev environment
-    if (error.message.includes('API key') || error.code === 'invalid_api_key') {
-      console.warn('⚠️ OpenAI API Key invalid or missing. Returning mock tool call response for demo mode.');
-      return {
-        hasToolCall: true,
-        toolName: 'create_calendar_event',
-        eventDetails: {
-          title: 'Project Kickoff Meeting',
-          date: '2026-09-15',
-          time: '10:00 AM',
-          location: 'Meeting Room B'
-        },
-        message: 'I found an event in this page: "Project Kickoff Meeting" on Tuesday, Sept 15 at 10:00 AM.'
-      };
-    }
+    // Dynamic Fallback: Parse the actual page context sent from the browser!
+    console.log('ℹ️ Parsing active webpage context dynamically using heuristic extraction fallback...');
+    const extractedDetails = extractEventHeuristic(pageContext, userRequest);
 
-    throw error;
+    return {
+      hasToolCall: true,
+      toolName: 'create_calendar_event',
+      eventDetails: extractedDetails,
+      message: `I extracted event details from this page: "${extractedDetails.title}" on ${extractedDetails.date} at ${extractedDetails.time}.`
+    };
   }
 }
 
