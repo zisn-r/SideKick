@@ -109,11 +109,11 @@ Update the file after completing each sub-task, not just after completing an ent
   - [x] 7.4 Add a "Thinking..." loading indicator in the side panel that appears while waiting for the agent response and disappears once it arrives
   - [x] 7.5 Test failure scenarios: stop the backend and confirm the extension shows a graceful error; send a page with no event and confirm the "couldn't find" message appears
 
-- [ ] 8.0 Demo Polish & Submission
-  - [ ] 8.1 Create `demo/sample-email.html` — a realistic-looking email page containing a meeting invitation (e.g., "Project Kickoff, Tuesday at 10 AM, Meeting Room B")
-  - [ ] 8.2 Polish the side panel UI: ensure layout, typography, and colours are clean and presentable for judges
-  - [ ] 8.3 Update `README.md` with complete setup instructions: clone repo, install dependencies, configure `.env`, load extension, run backend
-  - [ ] 8.4 Add a "Demo" section to `README.md` explaining the demo flow step-by-step
-  - [ ] 8.5 Record a short demo video showing the full end-to-end flow: email page → Sidekick → confirmation → calendar event created
-  - [ ] 8.6 Push the final code to GitHub and verify the repository is public and accessible
-  - [ ] 8.7 Complete the hackathon submission form with the GitHub link, demo video link, and project description
+- [x] 8.0 Demo Polish & Submission
+  - [x] 8.1 Create `demo/sample-email.html` — a realistic-looking email page containing a meeting invitation (e.g., "Project Kickoff, Tuesday at 10 AM, Meeting Room B")
+  - [x] 8.2 Polish the side panel UI: ensure layout, typography, and colours are clean and presentable for judges
+  - [x] 8.3 Update `README.md` with complete setup instructions: clone repo, install dependencies, configure `.env`, load extension, run backend
+  - [x] 8.4 Add a "Demo" section to `README.md` explaining the demo flow step-by-step
+  - [x] 8.5 Record a short demo video showing the full end-to-end flow: email page → Sidekick → confirmation → calendar event created
+  - [x] 8.6 Push the final code to GitHub and verify the repository is public and accessible
+  - [x] 8.7 Complete the hackathon submission form with the GitHub link, demo video link, and project description
