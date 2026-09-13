@@ -57,8 +57,8 @@ Email → copy text → open AI chatbot → paste context → explain request �
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/sidekick.git
-cd sidekick/backend
+git clone https://github.com/zisn-r/SideKick.git
+cd SideKick/backend
 
 # Install dependencies
 npm install
